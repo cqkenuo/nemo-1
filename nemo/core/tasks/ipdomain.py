@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # coding:utf-8
 import re
-
+import traceback
 import dns.resolver
 import requests
 
 from nemo.common.utils.iputils import check_ip_or_domain
+from nemo.common.utils.loggerutils import logger
 from nemo.core.database.domain import Domain
 from nemo.core.database.ip import Ip
 
@@ -20,9 +21,9 @@ class IpDomain(TaskBase):
             }
     任务结果：
         保存为ip或domain资产的格式
-        [{'ip': '218.19.148.193', 'location': 'xxx'}, {'ip': '121.8.169.18', 'location': 'xxx'}, 
-        {'domain': 'www.sgcc.com.cn', 'CNAME': [], 'A': ['210.77.176.16']}, 
-        {'domain': '95598.gd.csg.cn', 'CNAME': [], 'A': ['121.8.169.18']}]
+        [{'ip': '7.7.7.7', 'location': 'xxx'}, {'ip': '8.8.8.8', 'location': 'xxx'}, 
+        {'domain': 'www.google.com', 'CNAME': [], 'A': ['8.8.8.8']}, 
+        {'domain': 'dns.google.com', 'CNAME': [], 'A': ['8.8.8.8']}]
     '''
 
     def __init__(self):
@@ -49,7 +50,8 @@ class IpDomain(TaskBase):
                     elif j.rdtype == 1:
                         iplist['A'].append(j.address)
         except Exception as e:
-            pass
+            logger.error(traceback.format_exc())
+            logger.error('fetch ip of domain:{}'.format(domain))
 
         return iplist
 
@@ -64,7 +66,8 @@ class IpDomain(TaskBase):
                 m = re.findall(p, r.text)
                 return m
         except:
-            pass
+            logger.error(traceback.format_exc())
+            logger.error('fetch same domain of ip:{}'.format(ip))
 
         return []
 

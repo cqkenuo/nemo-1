@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding:utf-8
-
+import traceback
 from flask import render_template
 from flask import Blueprint
 from flask import request
@@ -10,6 +10,7 @@ from flask import Response
 
 from nemo.common.utils.assertexport import export_domains
 from nemo.common.utils.assertinfoparser import AssertInfoParser
+from nemo.common.utils.loggerutils import logger
 from nemo.core.database.attr import DomainAttr
 from nemo.core.database.domain import Domain
 from nemo.core.database.organization import Organization
@@ -29,7 +30,7 @@ def domain_asset_view():
         org_list = org_table.gets()
         if not org_list:
             org_list = []
-        org_list.insert(0, {'id': '', 'org_name': '--选择组织机构--'})
+        org_list.insert(0, {'id': '', 'org_name': '--组织机构--'})
 
         data = {'org_list': org_list, 'domain_address': session.get(
             'domain_address', default=''), 'ip_address_domain': session.get('ip_address_domain', default=''), 'session_org_id': session.get('session_org_id', default='')}
@@ -73,8 +74,8 @@ def domain_asset_view():
                     "create_time": str(domain_row['create_datetime']),
                     "update_time": str(domain_row['update_datetime']),
                     'port': domain_info['port'],
-                    'title': domain_info['title'],
-                    'banner': domain_info['banner']
+                    'title': ', '.join(domain_info['title']),
+                    'banner': ', '.join(domain_info['banner'])
                 })
                 index += 1
             count = domain_table.count_by_org_domain_ip(
@@ -86,6 +87,7 @@ def domain_asset_view():
             'data': domain_list
         }
     except Exception as e:
+        logger.error(traceback.format_exc())
         print(e)
 
     return jsonify(json_data)

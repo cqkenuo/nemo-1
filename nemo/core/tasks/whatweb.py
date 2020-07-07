@@ -2,12 +2,13 @@
 # coding:utf-8
 from multiprocessing.dummy import Pool
 import re
+import traceback
 import subprocess
 from tempfile import NamedTemporaryFile
 
 from nemo.common.utils.config import load_config
 from nemo.common.utils.iputils import check_ip_or_domain
-
+from nemo.common.utils.loggerutils import logger
 from .taskbase import TaskBase
 
 
@@ -15,13 +16,13 @@ class WhatWeb(TaskBase):
     '''调用WhatWeb的获取CMS的指纹
     参数:options  
             {   
-                'target':   [url1,url2,ur3...],url列表可是以doamin或IP:PORT，如www.cq.sgcc.com.cn 或 58.17.138.70:80
+                'target':   [url1,url2,ur3...],url列表可是以doamin或IP:PORT，如www.google.com 或 8.8.8.8:80
                 'org_id':   id,target关联的组织机构ID
             }
     任务结果:
         保存为ip或domain资产格式的列表：
         [{'ip':'192.168.1.1','port':[{'port':80,'whatweb':'xxx,yyy,zzz','source':'whatweb'},...]},...]
-        [{'domain':'www.cq.sgcc.com.cn','whatweb':['xxx',]},...]
+        [{'domain':'www.google.com,'whatweb':['xxx',]},...]
     '''
 
     def __init__(self):
@@ -58,6 +59,8 @@ class WhatWeb(TaskBase):
                 if result.startswith('ERROR'):
                     result = None
             except Exception as e2:
+                logger.error(traceback.format_exc())
+                logger.error('whatweb url:{}'.format(url))
                 result = None
                 print(e2)
 
@@ -156,4 +159,5 @@ class WhatWeb(TaskBase):
 
             return result
         except Exception as e:
+            logger.error(traceback.format_exc())
             return {'status': 'fail', 'msg': str(e)}
