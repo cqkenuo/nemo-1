@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding:utf-8
+from collections import defaultdict
 from nemo.core.database.attr import DomainAttr, PortAttr
 from nemo.core.database.domain import Domain
 from nemo.core.database.ip import Ip
@@ -55,7 +56,8 @@ class AssertInfoParser():
                 if port_attr_obj['tag'] == 'title':
                     title_set.add(port_attr_obj['content'])
                 elif port_attr_obj['tag'] in ('banner', 'tag', 'server'):
-                    banner_set.add(port_attr_obj['content'])
+                    if port_attr_obj['content'] and port_attr_obj['content']!='unknown':
+                        banner_set.add(port_attr_obj['content'])
 
                 ports_attr_info.append(pai)
 
@@ -155,6 +157,8 @@ class AssertInfoParser():
         ip_list = []
         ip_c_set = set()
         port_set = set()
+        #统计每个端口出现的次数
+        port_count_dict = defaultdict(lambda : 0)
         ips = ip_table.gets_by_search(org_id=org_id, domain=domain_address, ip=ip_address, port=port, content=content,
                                       iplocation=iplocation, page=1, rows_per_page=100000)
         if ips:
@@ -169,5 +173,6 @@ class AssertInfoParser():
                 ports_obj = port_table.gets(query={'ip_id': ip_row['id']})
                 for port_obj in ports_obj:
                     port_set.add(port_obj['port'])
+                    port_count_dict[str(port_obj['port'])] += 1
 
-        return ip_list, ip_c_set, port_set
+        return ip_list, ip_c_set, port_set,port_count_dict
